@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# Zip files
+*.zip
+
+# Node
+node_modules/

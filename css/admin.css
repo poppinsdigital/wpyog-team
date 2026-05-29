@@ -1,0 +1,306 @@
+/* ============================================================
+   WPYog Team — Admin Styles
+   ============================================================ */
+
+/* Shortcode preview bar */
+.pt-shortcode-preview {
+  background: #f9f9f9;
+  border-left: 3px solid #0073aa;
+  padding: 10px 14px;
+  margin: 10px 0 0;
+  border-radius: 0 6px 6px 0;
+}
+.pt-shortcode-preview code {
+  font-size: 0.9rem;
+  background: #eee;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.pt-copy-sc {
+  margin-left: 8px !important;
+  vertical-align: middle !important;
+}
+
+/* ---- Metabox wrapper ---- */
+.pt-metabox-wrap {
+  padding: 4px 0 8px;
+}
+
+.pt-section {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 18px 4px;
+}
+.pt-section:last-child {
+  border-bottom: none;
+}
+
+.pt-section-header {
+  margin-bottom: 12px;
+}
+.pt-section-header h4 {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0 0 3px;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pt-section-desc {
+  font-size: 0.82rem;
+  color: #888;
+}
+
+/* ---- Field ---- */
+.pt-field {
+  margin-bottom: 14px;
+}
+.pt-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+  color: #333;
+}
+.pt-field .pt-hint {
+  font-weight: 400;
+  color: #999;
+  font-size: 0.8rem;
+}
+.pt-field input.widefat,
+.pt-field textarea.widefat {
+  font-size: 0.9rem;
+}
+.pt-field textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+/* ---- Repeater table ---- */
+.pt-repeater-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+}
+.pt-repeater-table thead th {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+  padding: 6px 8px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #e5e5e5;
+  text-align: left;
+}
+.pt-repeater-table .pt-drag-col {
+  width: 28px;
+  text-align: center;
+  cursor: grab;
+}
+.pt-repeater-table tbody tr {
+  background: #fff;
+  transition: background 0.15s;
+}
+.pt-repeater-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+.pt-repeater-table tbody tr:hover {
+  background: #f5f8ff;
+}
+.pt-repeater-table tbody td {
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.pt-repeater-table input.widefat {
+  font-size: 0.85rem;
+}
+.pt-remove-row {
+  color: #a00 !important;
+  font-size: 0.8rem !important;
+  white-space: nowrap;
+}
+.pt-add-row {
+  margin-top: 6px !important;
+}
+
+/* Icon select preview */
+.pt-icon-select {
+  font-size: 0.85rem;
+}
+
+/* ---- Member picker ---- */
+.pt-member-picker {
+  margin-bottom: 12px;
+}
+.pt-member-picker .select2-container {
+  width: 100% !important;
+  max-width: 420px;
+}
+
+/* Selected members list */
+.pt-members-selected {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  min-height: 42px;
+  background: #fafafa;
+}
+.pt-members-selected li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.88rem;
+  background: #fff;
+}
+.pt-members-selected li:last-child {
+  border-bottom: none;
+}
+.pt-members-selected li img {
+  border-radius: 3px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.pt-no-members-msg {
+  color: #aaa;
+  font-style: italic;
+  font-size: 0.85rem !important;
+  justify-content: center !important;
+}
+.pt-drag-handle {
+  color: #bbb;
+  cursor: grab;
+  flex-shrink: 0;
+}
+.pt-member-name {
+  flex: 1;
+  font-weight: 500;
+}
+.pt-remove-member {
+  color: #bbb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.pt-remove-member:hover {
+  color: #cc0000;
+  background: #fff0f0;
+}
+
+/* ---- Layout grid ---- */
+.pt-layout-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+.pt-layout-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 20px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  min-width: 80px;
+  background: #fff;
+}
+.pt-layout-option input[type="radio"] {
+  display: none;
+}
+.pt-layout-option .dashicons {
+  font-size: 1.6rem;
+  color: #555;
+}
+.pt-layout-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+.pt-layout-option:hover,
+.pt-layout-option.is-selected {
+  border-color: #0073aa;
+  background: #f0f7fc;
+}
+.pt-layout-option.is-selected .dashicons,
+.pt-layout-option.is-selected .pt-layout-label {
+  color: #0073aa;
+}
+
+/* ---- Spacing section ---- */
+.pt-spacing-section {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.pt-spacing-group h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pt-spacing-inputs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pt-spacing-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.pt-spacing-field input[type="number"] {
+  width: 56px;
+  text-align: center;
+  padding: 4px 6px;
+  font-size: 0.88rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.pt-spacing-field label {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---- Custom CSS textarea ---- */
+.pt-custom-css {
+  font-family: monospace;
+  font-size: 0.85rem !important;
+  min-height: 120px;
+  resize: vertical;
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  border-color: #444 !important;
+  border-radius: 4px;
+}
+
+/* ---- Section row helper ---- */
+.pt-section-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.pt-section-row .pt-field {
+  flex: 1;
+  min-width: 160px;
+  margin-bottom: 0;
+}
+.pt-select {
+  min-width: 160px;
+}
