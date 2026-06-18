@@ -144,6 +144,9 @@ body.pt-modal-open {
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.75);
   z-index: 99999;
+  /* Flexbox centering — kept as a hint for browsers that respect it.
+     Actual centering is done via position:absolute on .pt-modal below,
+     so block-theme CSS overriding flex has no effect. */
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -168,11 +171,16 @@ body.pt-modal-open {
 }
 
 /* ---- White modal box ---- */
+/* Centred via position:absolute + translate so block-theme flex overrides cannot misplace it. */
 .pt-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
   background: #fff;
   max-width: 880px;
   width: calc(100% - 140px);
-  position: relative;
   padding: 40px;
   -webkit-box-shadow: 0 10px 40px rgba(0,0,0,0.35);
           box-shadow: 0 10px 40px rgba(0,0,0,0.35);
@@ -189,13 +197,14 @@ body.pt-modal-open {
           flex-direction: column;
 }
 
+/* Slide-up animation: merge the centering translate with the Y slide so they coexist. */
 @-webkit-keyframes ptSlideUp {
-  from { -webkit-transform: translateY(20px); transform: translateY(20px); opacity: 0; }
-  to   { -webkit-transform: translateY(0);    transform: translateY(0);    opacity: 1; }
+  from { -webkit-transform: translate(-50%, calc(-50% + 20px)); opacity: 0; }
+  to   { -webkit-transform: translate(-50%, -50%);               opacity: 1; }
 }
 @keyframes ptSlideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+  from { transform: translate(-50%, calc(-50% + 20px)); opacity: 0; }
+  to   { transform: translate(-50%, -50%);               opacity: 1; }
 }
 
 /* ---- Mobile nav bar (hidden on desktop) ---- */

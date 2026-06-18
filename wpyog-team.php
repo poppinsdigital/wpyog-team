@@ -3,7 +3,7 @@
  * Plugin Name: WPYog Team
  * Plugin URI:  https://popswidgets.com/
  * Description: A clean and modern WordPress plugin to showcase your team with a beautiful popup layout.
- * Version:     1.0.16
+ * Version:     1.0.20
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * Author:      poppinsdigital.com
@@ -25,6 +25,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 
 		private static $instance = null;
 		private $settings;
+		private $exporter;
 
 		public static function get_instance() {
 			if ( null === self::$instance ) {
@@ -39,10 +40,11 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				'plugin_url'     => plugin_dir_url( __FILE__ ),
 				'plugin_base'    => dirname( plugin_basename( __FILE__ ) ),
 				'plugin_file'    => __FILE__,
-				'plugin_version' => '1.0.16',
+				'plugin_version' => '1.0.20',
 			);
 			$this->run_plugin();
 			$this->admin_functions();
+			$this->exporter = new WPYog_Export_Import( $this );
 		}
 
 		// =========================================================================
@@ -74,7 +76,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 		public function enqueue_frontend() {
 			wp_enqueue_style( 'wpyog-team-icons', plugins_url( 'css/icomoon.css', $this->settings['plugin_file'] ), array(), $this->settings['plugin_version'] );
 			wp_enqueue_style( 'wpyog-team', plugins_url( 'css/team.css', $this->settings['plugin_file'] ), array(), $this->settings['plugin_version'] );
-			wp_enqueue_script( 'wpyog-team', plugins_url( 'js/team-frontend.js', $this->settings['plugin_file'] ), array( 'jquery' ), $this->settings['plugin_version'], true );
+			wp_enqueue_script( 'wpyog-team', plugins_url( 'js/team-frontend.js', $this->settings['plugin_file'] ), array(), $this->settings['plugin_version'], true );
 		}
 
 		public function shortcode( $atts ) {
@@ -163,6 +165,14 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				__( 'Add Team', 'wpyog-team' ),
 				'manage_options',
 				'post-new.php?post_type=wpyog_team'
+			);
+			add_submenu_page(
+				'edit.php?post_type=wpyog_member',
+				__( 'Export / Import', 'wpyog-team' ),
+				__( 'Export / Import', 'wpyog-team' ),
+				'manage_options',
+				'wpyog-export-import',
+				array( $this->exporter, 'render_page' )
 			);
 		}
 
@@ -497,6 +507,8 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 			) );
 		}
 	}
+
+	require_once plugin_dir_path( __FILE__ ) . 'includes/export-import.php';
 
 	function wpyog_team_init() {
 		WPYog_Team::get_instance();

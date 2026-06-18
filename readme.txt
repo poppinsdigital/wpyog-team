@@ -4,7 +4,7 @@ Tags: team, staff, members, directory, shortcode
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 1.0.16
+Stable tag: 1.0.20
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,7 +99,9 @@ Publish your team members just like regular WordPress posts.
 
 Use the shortcode below on any page, post, or widget area:
 
-`[wpyog_team]`
+`[wpyogteam id="YOUR_TEAM_ID"]`
+
+You can find the Team ID on the Team edit screen or in the Teams list.
 
 **4. Display by Department or Category**
 
@@ -122,11 +124,11 @@ You can use it to create:
 
 = How do I display my team on a page? =
 
-Use the shortcode `[wpyog_team]` on any page, post, or widget area.
+Use the shortcode `[wpyogteam id="YOUR_TEAM_ID"]` on any page, post, or widget area. You can find the Team ID on the Team edit screen.
 
 = Can I filter by department or category? =
 
-Yes. Use `[wpyog_team category="your-category"]` to display members from a specific department.
+Members are grouped into Teams. Create a Team, assign members to it, then use `[wpyogteam id="YOUR_TEAM_ID"]` to display that team anywhere.
 
 = Does it work with Elementor? =
 
@@ -145,6 +147,19 @@ Yes, all layouts are fully mobile responsive.
 
 == Changelog ==
 
+= 1.0.20 =
+* Fix: Modal popup was left-aligned instead of centred on Twenty Twenty-Five and other block themes. Centering is now done via `position:absolute` + `translate(-50%, -50%)` on the modal itself, making it immune to block theme flex/grid overrides.
+
+= 1.0.19 =
+* Fix: Popup member data (`ptTeamData`) was missing from the page on block themes running WordPress 6.6 and later. `wp_add_inline_script()` was silently dropped because the script handle had already been printed before the shortcode block rendered. Data is now embedded directly in the shortcode HTML output, guaranteeing it is always present.
+
+= 1.0.18 =
+* Improvement: Frontend JavaScript completely rewritten in vanilla JS — no jQuery dependency. Eliminates popup failures on block themes (such as Twenty Twenty-Five) where jQuery may not be loaded. Reduces frontend payload.
+* Fix: Inline member data script no longer wrapped in a jQuery IIFE, preventing silent failures when jQuery is unavailable.
+
+= 1.0.17 =
+* New: Export / Import feature. Export all team members and teams as a JSON file and import them on any other site. Supports staging-to-live migration. Member photos are re-downloaded automatically on import via media sideloading.
+
 = 1.0.16 =
 * Stability improvements and bug fixes.
 
@@ -153,5 +168,14 @@ Yes, all layouts are fully mobile responsive.
 
 == Upgrade Notice ==
 
-= 1.0.16 =
-Stability improvements and bug fixes. Recommended update for all users.
+= 1.0.20 =
+Fixes popup centering on Twenty Twenty-Five and other block themes. Recommended update for all users.
+
+= 1.0.19 =
+Critical fix: popup data was not loading on block themes with WordPress 6.6+. Update immediately if using a block theme.
+
+= 1.0.18 =
+Frontend JavaScript rewritten without jQuery — improves compatibility with all block themes.
+
+= 1.0.17 =
+Adds Export / Import for easy migration between staging and live sites.

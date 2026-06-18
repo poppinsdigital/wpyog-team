@@ -1,144 +1,197 @@
 /**
  * WPYog Team — Frontend JS
- * Handles the popup/modal for the popup layout.
+ * Vanilla JS — no jQuery dependency. Works on all themes including block themes (TT5+).
  */
-(function ($) {
+(function () {
   'use strict';
 
-  // One modal per team wrapper
-  $(document).ready(function () {
-    initTeamPopups();
-  });
+  /* ---- DOM-ready helper ---- */
+  function ready(fn) {
+    if (document.readyState !== 'loading') {
+      fn();
+    } else {
+      document.addEventListener('DOMContentLoaded', fn);
+    }
+  }
+
+  ready(initTeamPopups);
 
   function initTeamPopups() {
-    $('.pt-popup-layout').each(function () {
-      var $wrap   = $(this);
-      var teamId  = $wrap.data('team');
+    var wraps = document.querySelectorAll('.pt-popup-layout');
+    wraps.forEach(function (wrap) {
+      var teamId  = wrap.getAttribute('data-team');
       var members = (window.ptTeamData && window.ptTeamData[teamId]) || [];
       var current = 0;
 
       if (!members.length) return;
 
-      var $overlay = $wrap.find('.pt-modal-overlay');
-      var $modal   = $wrap.find('.pt-modal');
+      var overlay = wrap.querySelector('.pt-modal-overlay');
+      var modal   = wrap.querySelector('.pt-modal');
 
-      /* ---- Open modal on card click ---- */
-      $wrap.on('click', '.pt-card', function () {
-        current = parseInt($(this).data('index'), 10) || 0;
+      /* ---- Open on card click ---- */
+      wrap.addEventListener('click', function (e) {
+        var card = e.target.closest('.pt-card');
+        if (!card) return;
+        current = parseInt(card.getAttribute('data-index'), 10) || 0;
         showMember(current);
-        $overlay.fadeIn(180);
-        $('body').addClass('pt-modal-open');
-        trapFocus($modal[0]);
+        fadeIn(overlay, 180);
+        document.body.classList.add('pt-modal-open');
+        trapFocus(modal);
       });
 
-      /* ---- Close: overlay click or ESC only (no X button) ---- */
-      $overlay.on('click', function (e) {
-        if ($(e.target).is($overlay)) {
-          closeModal();
-        }
+      /* ---- Close: backdrop click ---- */
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeModal();
       });
-      $(document).on('keydown.ptModal', function (e) {
-        if (!$overlay.is(':visible')) return;
-        if (e.key === 'Escape')    closeModal();
-        if (e.key === 'ArrowLeft') prevMember();
+
+      /* ---- Close: buttons (close / prev / next) via delegation ---- */
+      wrap.addEventListener('click', function (e) {
+        if (e.target.closest('.pt-modal-close')) { closeModal(); return; }
+        if (e.target.closest('.pt-modal-prev'))  { prevMember(); return; }
+        if (e.target.closest('.pt-modal-next'))  { nextMember(); return; }
+      });
+
+      /* ---- Keyboard ---- */
+      document.addEventListener('keydown', function (e) {
+        if (!overlayVisible()) return;
+        if (e.key === 'Escape')     closeModal();
+        if (e.key === 'ArrowLeft')  prevMember();
         if (e.key === 'ArrowRight') nextMember();
       });
 
-      /* ---- Close button ---- */
-      $wrap.on('click', '.pt-modal-close', closeModal);
-
-      /* ---- Prev / Next ---- */
-      $wrap.on('click', '.pt-modal-prev', prevMember);
-      $wrap.on('click', '.pt-modal-next', nextMember);
-
-      /* ---- Scrollbar hover-reveal (class toggle for both WebKit + Firefox) ---- */
-      $modal.on('mouseenter', function () {
-        $modal.addClass('pt-scrollbar-visible');
-      }).on('mouseleave', function () {
-        $modal.removeClass('pt-scrollbar-visible');
-      });
+      /* ---- Scrollbar hover-reveal ---- */
+      modal.addEventListener('mouseenter', function () { modal.classList.add('pt-scrollbar-visible'); });
+      modal.addEventListener('mouseleave', function () { modal.classList.remove('pt-scrollbar-visible'); });
 
       /* ---- Touch swipe ---- */
       var touchStartX = 0;
-      $modal[0].addEventListener('touchstart', function (e) {
+      modal.addEventListener('touchstart', function (e) {
         touchStartX = e.changedTouches[0].screenX;
       }, { passive: true });
-      $modal[0].addEventListener('touchend', function (e) {
+      modal.addEventListener('touchend', function (e) {
         var delta = e.changedTouches[0].screenX - touchStartX;
         if (Math.abs(delta) > 50) {
           if (delta < 0) nextMember(); else prevMember();
         }
       }, { passive: true });
 
+      /* ---- Helpers ---- */
+
+      function overlayVisible() {
+        return overlay && overlay.offsetParent !== null;
+      }
+
       function showMember(idx) {
         var m = members[idx];
         if (!m) return;
 
-        // Animate content out, swap, animate in
-        var $inner = $wrap.find('.pt-modal-inner');
-        $inner.css({ opacity: 0.4 });
+        var inner = wrap.querySelector('.pt-modal-inner');
+        inner.style.opacity = '0.4';
+        inner.style.transition = 'opacity 0.15s';
 
-        $wrap.find('.pt-modal-img').attr('src', m.photo).attr('alt', m.name);
-        $wrap.find('.pt-modal-designation').text(m.designation || '');
-        $wrap.find('.pt-modal-name').text(m.name || '');
-        $wrap.find('.pt-modal-subtitle').text(m.subtitle || '');
-        $wrap.find('.pt-modal-bio').html(m.bio || '');
-        $wrap.find('.pt-modal-contacts').html(m.contacts || '');
-        $wrap.find('.pt-modal-social').html(m.social || '');
+        var img = wrap.querySelector('.pt-modal-img');
+        img.setAttribute('src', m.photo || '');
+        img.setAttribute('alt', m.name  || '');
 
-        // Show/hide empty sections
-        toggleSection($wrap.find('.pt-modal-designation'), m.designation);
-        toggleSection($wrap.find('.pt-modal-subtitle'), m.subtitle);
-        toggleSection($wrap.find('.pt-modal-bio'), m.bio);
-        toggleSection($wrap.find('.pt-modal-contacts'), m.contacts);
-        toggleSection($wrap.find('.pt-modal-social'), m.social);
+        setText('.pt-modal-name',        m.name        || '');
+        setText('.pt-modal-designation', m.designation || '');
+        setText('.pt-modal-subtitle',    m.subtitle    || '');
+        setHtml('.pt-modal-bio',         m.bio         || '');
+        setHtml('.pt-modal-contacts',    m.contacts    || '');
+        setHtml('.pt-modal-social',      m.social      || '');
 
-        $inner.animate({ opacity: 1 }, 150);
+        toggleSection('.pt-modal-designation', m.designation);
+        toggleSection('.pt-modal-subtitle',    m.subtitle);
+        toggleSection('.pt-modal-bio',         m.bio);
+        toggleSection('.pt-modal-contacts',    m.contacts);
+        toggleSection('.pt-modal-social',      m.social);
 
-        // Update prev/next visibility
-        $wrap.find('.pt-modal-prev').toggle(members.length > 1);
-        $wrap.find('.pt-modal-next').toggle(members.length > 1);
+        // Animate back in
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            inner.style.opacity = '1';
+            setTimeout(function () { inner.style.transition = ''; }, 160);
+          });
+        });
+
+        // Prev/next visibility
+        var showNav = members.length > 1;
+        wrap.querySelectorAll('.pt-modal-prev, .pt-modal-next').forEach(function (btn) {
+          btn.style.display = showNav ? '' : 'none';
+        });
 
         // Scroll content to top
-        $wrap.find('.pt-modal-content')[0].scrollTop = 0;
-        $wrap.find('.pt-modal-bio')[0].scrollTop = 0;
+        var content = wrap.querySelector('.pt-modal-content');
+        if (content) content.scrollTop = 0;
       }
 
-      function toggleSection($el, content) {
-        if (content && content.trim() !== '') {
-          $el.show();
-        } else {
-          $el.hide();
-        }
+      function setText(sel, val) {
+        var el = wrap.querySelector(sel);
+        if (el) el.textContent = val;
+      }
+
+      function setHtml(sel, val) {
+        var el = wrap.querySelector(sel);
+        if (el) el.innerHTML = val;
+      }
+
+      function toggleSection(sel, content) {
+        var el = wrap.querySelector(sel);
+        if (!el) return;
+        el.style.display = (content && content.trim() !== '') ? '' : 'none';
       }
 
       function prevMember() {
         current = (current - 1 + members.length) % members.length;
         showMember(current);
       }
+
       function nextMember() {
         current = (current + 1) % members.length;
         showMember(current);
       }
 
       function closeModal() {
-        $overlay.fadeOut(160);
-        $('body').removeClass('pt-modal-open');
-        $(document).off('keydown.ptModal');
+        fadeOut(overlay, 160);
+        document.body.classList.remove('pt-modal-open');
       }
     });
   }
 
+  /* ---- Fade helpers (CSS-transition based) ---- */
+  function fadeIn(el, duration) {
+    el.style.opacity    = '0';
+    el.style.display    = 'block';
+    el.style.transition = 'opacity ' + (duration / 1000) + 's';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        el.style.opacity = '1';
+        setTimeout(function () { el.style.transition = ''; }, duration);
+      });
+    });
+  }
+
+  function fadeOut(el, duration) {
+    el.style.transition = 'opacity ' + (duration / 1000) + 's';
+    el.style.opacity    = '0';
+    setTimeout(function () {
+      el.style.transition = '';
+      el.style.opacity    = '';
+      el.style.display    = 'none';
+    }, duration);
+  }
+
   /* Prevent body scroll when modal open */
-  $('<style>.pt-modal-open { overflow: hidden !important; }</style>').appendTo('head');
+  var style = document.createElement('style');
+  style.textContent = '.pt-modal-open { overflow: hidden !important; }';
+  document.head.appendChild(style);
 
   /* Basic focus trap */
   function trapFocus(modalEl) {
     var focusable = modalEl.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
-    if (!focusable.length) return;
-    focusable[0].focus();
+    if (focusable.length) focusable[0].focus();
   }
 
-})(jQuery);
+})();

@@ -193,9 +193,13 @@ foreach ( $all_members as $m ) {
 	);
 }
 
-$wpyog_inline_js = sprintf(
-	'(function($){ window.ptTeamData = window.ptTeamData || {}; window.ptTeamData[%s] = %s; })(jQuery);',
+// Output member data inline — directly in shortcode HTML so it is guaranteed
+// to be present in the DOM regardless of block theme script-printing order.
+// wp_add_inline_script() is unreliable on block themes (WordPress 6.6+) because
+// the script handle may already have been printed before the shortcode block renders.
+printf(
+	'<script id="wpyog-team-data-%1$s">window.ptTeamData=window.ptTeamData||{};window.ptTeamData[%2$s]=%3$s;</script>',
+	esc_attr( $id ),
 	wp_json_encode( (string) $id ),
 	wp_json_encode( $members_json )
 );
-wp_add_inline_script( 'wpyog-team', $wpyog_inline_js );
