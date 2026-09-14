@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- this file is only ever reached via include()/require() from inside a class method; its top-level variables and hook usage are function-local, not real WordPress globals.
+
 $designation = get_post_meta( $post->ID, 'wpyog_designation', true );
 $subtitle    = get_post_meta( $post->ID, 'wpyog_subtitle', true );
 $short_desc  = get_post_meta( $post->ID, 'wpyog_short_desc', true );

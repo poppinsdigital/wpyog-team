@@ -102,7 +102,7 @@ class WPYog_Export_Import {
 			'post_status'      => array( 'publish', 'draft' ),
 			'orderby'          => 'title',
 			'order'            => 'ASC',
-			'suppress_filters' => true,
+			'suppress_filters' => false,
 			'no_found_rows'    => true,
 		) );
 
@@ -145,7 +145,7 @@ class WPYog_Export_Import {
 			'post_status'      => array( 'publish', 'draft' ),
 			'orderby'          => 'title',
 			'order'            => 'ASC',
-			'suppress_filters' => true,
+			'suppress_filters' => false,
 			'no_found_rows'    => true,
 		) );
 
@@ -195,8 +195,8 @@ class WPYog_Export_Import {
 			exit;
 		}
 
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$file_content = file_get_contents( $_FILES['wpyog_import_file']['tmp_name'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$tmp_path     = sanitize_text_field( wp_unslash( $_FILES['wpyog_import_file']['tmp_name'] ) );
+		$file_content = file_get_contents( $tmp_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading an uploaded temp file, no core alternative for local JSON reads.
 		$data         = json_decode( $file_content, true );
 
 		if ( ! is_array( $data ) || ( $data['plugin'] ?? '' ) !== 'wpyog-team' ) {

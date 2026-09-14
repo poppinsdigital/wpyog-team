@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- this file is only ever reached via include()/require() from inside a class method; its top-level variables and hook usage are function-local, not real WordPress globals.
+
 $cols    = isset( $options['columns'] ) ? absint( $options['columns'] ) : 3;
 $margin  = isset( $options['margin'] )  ? $options['margin']  : array();
 $padding = isset( $options['padding'] ) ? $options['padding'] : array();

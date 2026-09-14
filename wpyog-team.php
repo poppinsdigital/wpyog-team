@@ -3,7 +3,7 @@
  * Plugin Name: WPYog Team
  * Plugin URI:  https://popswidgets.com/
  * Description: A clean and modern WordPress plugin to showcase your team with a beautiful popup layout.
- * Version:     1.0.20
+ * Version:     1.0.22
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * Author:      poppinsdigital.com
@@ -40,7 +40,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				'plugin_url'     => plugin_dir_url( __FILE__ ),
 				'plugin_base'    => dirname( plugin_basename( __FILE__ ) ),
 				'plugin_file'    => __FILE__,
-				'plugin_version' => '1.0.20',
+				'plugin_version' => '1.0.22',
 			);
 			$this->run_plugin();
 			$this->admin_functions();
@@ -69,7 +69,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 
 		public function custom_image_size() {
 			if ( function_exists( 'add_image_size' ) ) {
-				add_image_size( 'wpyog_team', 500, 500, true );
+				add_image_size( 'wpyog_team', 800, 800, false );
 			}
 		}
 
@@ -109,7 +109,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				'orderby'          => 'post__in',
 				'posts_per_page'   => -1,
 				'post_status'      => 'publish',
-				'suppress_filters' => true,
+				'suppress_filters' => false,
 				'no_found_rows'    => true,
 			) );
 			include $template;
@@ -246,7 +246,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 		public function photo_hint( $html ) {
 			global $post_type, $post;
 			if ( 'wpyog_member' === $post_type && $post && ! has_post_thumbnail( $post->ID ) ) {
-				$html .= '<p class="description">' . esc_html__( 'Upload a square photo — 500×500px minimum recommended.', 'wpyog-team' ) . '</p>';
+				$html .= '<p class="description">' . esc_html__( 'Recommended: min. 800px on the longer side.', 'wpyog-team' ) . '</p>';
 			}
 			return $html;
 		}
@@ -302,6 +302,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 			}
 		}
 
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce ('pt_nonce') is verified in save_meta() before this private method is ever called.
 		private function save_member_meta( $post_id ) {
 			// Simple text fields
 			foreach ( array( 'wpyog_designation', 'wpyog_subtitle', 'wpyog_short_desc' ) as $field ) {
@@ -347,7 +348,9 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				delete_post_meta( $post_id, 'wpyog_social' );
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- nonce ('pt_nonce') is verified in save_meta() before this private method is ever called.
 		private function save_team_meta( $post_id ) {
 			// Memberlist
 			$new_members = isset( $_POST['memberlist'] ) ? array_map( 'absint', (array) $_POST['memberlist'] ) : array();
@@ -374,6 +377,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				update_post_meta( $post_id, 'pt_' . $box, $data );
 			}
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		// =========================================================================
 		// CPT REGISTRATION

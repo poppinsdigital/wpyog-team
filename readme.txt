@@ -2,9 +2,9 @@
 Contributors: wpyog
 Tags: team, staff, members, directory, shortcode
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 1.0.20
+Stable tag: 1.0.22
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,16 @@ Yes, all layouts are fully mobile responsive.
 
 == Changelog ==
 
+= 1.0.22 =
+* Fix: Removed explicit `suppress_filters => true` from internal queries (was bypassing other plugins' query filters).
+* Fix: Import file path now sanitized before use.
+* Fix: Updated "Tested up to" to the current WordPress version.
+* Housekeeping: Documented existing nonce checks and template-local variables for the WP.org code scanner (no functional change).
+
+= 1.0.21 =
+* Fix: Member photos were force-cropped to a 500×500 square on upload, cutting off portrait photos. Photos are now resized (not cropped) up to 800px, keeping their original aspect ratio.
+* Fix: Modal popup photo panel used object-fit:cover, which cropped portrait/landscape photos to fit the fixed sidebar box. It now shows the full photo without cropping.
+
 = 1.0.20 =
 * Fix: Modal popup was left-aligned instead of centred on Twenty Twenty-Five and other block themes. Centering is now done via `position:absolute` + `translate(-50%, -50%)` on the modal itself, making it immune to block theme flex/grid overrides.
 
@@ -167,6 +177,12 @@ Yes, all layouts are fully mobile responsive.
 * Initial release with popup layout, team grid, social media links, and shortcode support.
 
 == Upgrade Notice ==
+
+= 1.0.22 =
+Internal code quality fixes ahead of WordPress.org review. No visible changes for existing users.
+
+= 1.0.21 =
+Recommended update if you use non-square member photos.
 
 = 1.0.20 =
 Fixes popup centering on Twenty Twenty-Five and other block themes. Recommended update for all users.
