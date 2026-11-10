@@ -48,9 +48,22 @@
 .pt-cols-4 .pt-card { width: 25%; }
 .pt-cols-5 .pt-card { width: 20%; }
 
+/* Row reset: cards float left and can have different heights (wrapped names),
+   so a taller card snags the next row. Force the first card of each row to
+   start a new line. Inline-block / centred layouts ignore clear, so they are
+   not affected. */
+.pt-cols-2 .pt-card:nth-child(2n+1) { clear: left; }
+.pt-cols-3 .pt-card:nth-child(3n+1) { clear: left; }
+.pt-cols-4 .pt-card:nth-child(4n+1) { clear: left; }
+.pt-cols-5 .pt-card:nth-child(5n+1) { clear: left; }
+
 @media (max-width: 1024px) {
   .pt-cols-4 .pt-card,
   .pt-cols-5 .pt-card { width: 33.333%; }
+  .pt-cols-4 .pt-card:nth-child(4n+1),
+  .pt-cols-5 .pt-card:nth-child(5n+1) { clear: none; }
+  .pt-cols-4 .pt-card:nth-child(3n+1),
+  .pt-cols-5 .pt-card:nth-child(3n+1) { clear: left; }
 }
 @media (max-width: 992px) {
   .pt-card { width: 50%; }

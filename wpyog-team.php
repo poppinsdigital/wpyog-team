@@ -3,7 +3,7 @@
  * Plugin Name: WPYog Team
  * Plugin URI:  https://popswidgets.com/
  * Description: A clean and modern WordPress plugin to showcase your team with a beautiful popup layout.
- * Version:     1.0.27
+ * Version:     1.0.28
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * Author:      poppinsdigital.com
@@ -40,7 +40,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				'plugin_url'     => plugin_dir_url( __FILE__ ),
 				'plugin_base'    => dirname( plugin_basename( __FILE__ ) ),
 				'plugin_file'    => __FILE__,
-				'plugin_version' => '1.0.27',
+				'plugin_version' => '1.0.28',
 			);
 			$this->run_plugin();
 			$this->admin_functions();

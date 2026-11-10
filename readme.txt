@@ -4,7 +4,7 @@ Tags: team, staff, members, directory, shortcode
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 1.0.27
+Stable tag: 1.0.28
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -190,6 +190,9 @@ Yes, all layouts are fully mobile responsive.
 
 == Changelog ==
 
+= 1.0.28 =
+* Fix: Team grid cards no longer misalign when names or designations wrap to different heights. The first card of each row now always starts a new line.
+
 = 1.0.27 =
 * Change: Member pages now use `/team/member-name/` by default (was `/wpy_member/`).
 * New: Team > Settings page with a "Member page URL slug" field. Permalinks refresh automatically on save. Warns if the slug clashes with an existing page that has child pages, and blocks reserved WordPress slugs.
@@ -243,6 +246,9 @@ Yes, all layouts are fully mobile responsive.
 * Initial release with popup layout, team grid, social media links, and shortcode support.
 
 == Upgrade Notice ==
+
+= 1.0.28 =
+Fixes team grid alignment when card heights differ.
 
 = 1.0.27 =
 Member page URLs change to /team/member-name/ by default. You can change the slug under Team > Settings.
