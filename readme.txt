@@ -33,6 +33,11 @@ Built for businesses and organizations that want a clean and professional way to
 **Key Features:**
 
 * Responsive team grid layouts
+* Two layouts: Popup and Single Page
+* Circle profile images (optional)
+* Previous / Next navigation on member pages (optional)
+* Clean member URLs such as /team/member-name/ with an editable slug
+* Export / Import between sites
 * Team member profiles with image, designation, and bio
 * Social media profile links
 * Department and category support
@@ -103,11 +108,24 @@ Use the shortcode below on any page, post, or widget area:
 
 You can find the Team ID on the Team edit screen or in the Teams list.
 
-**4. Display by Department or Category**
+**4. Choose a Layout and Display Options**
 
-`[wpyog_team category="management"]`
+Open your team and set:
 
-**5. Customize Your Team Page**
+* **Layout:** Popup opens the member profile in a modal. Single Page links each card to the member's own page with photo, designation, name, bio, contact details and social links.
+* **Show profile image in circle:** crops member photos to a circle in the grid, popup and single page.
+* **Show previous / next navigation:** (Single Page layout) adds Previous and Next links at the bottom of each member page, following the member order of the team. Untick to hide them. On by default.
+* **Columns, margin and padding:** control the grid.
+
+**5. Change the Member Page URL**
+
+Go to: Team > Settings
+
+Member pages use `/team/member-name/` by default. Change the "Member page URL slug" to anything you like, for example `team-member` or `staff`. Permalinks refresh automatically after saving. Reserved WordPress slugs are blocked, and you get a warning if the slug clashes with an existing page that has child pages.
+
+Developers can also set the slug with the `wpyog_team_member_slug` filter.
+
+**6. Customize Your Team Page**
 
 The plugin works with most modern WordPress themes and page builders including Elementor.
 
@@ -134,6 +152,30 @@ Members are grouped into Teams. Create a Team, assign members to it, then use `[
 
 Yes, WPYog Team is Elementor-friendly and works with most modern WordPress themes and page builders.
 
+= How do I open member details on their own page instead of a popup? =
+
+Edit your team and choose the **Single Page** layout. Each card then links to the member's own page.
+
+= How do I turn off the Previous / Next links on member pages? =
+
+Edit the team (Single Page layout) and untick **Show previous / next navigation**, then click Update.
+
+= How do I show profile photos as circles? =
+
+Edit the team and tick **Show profile image in circle**. It applies to the grid, popup and single page.
+
+= Can I change the member page URL? =
+
+Yes. Go to Team > Settings and change the **Member page URL slug**. The default is `team`, giving URLs like `/team/jane-doe/`. If you have a page at `/team/` with child pages, pick a different slug such as `team-member` to avoid clashes.
+
+= A member page shows a 404 after I changed the slug. =
+
+Go to Settings > Permalinks and click Save Changes once to refresh the rules.
+
+= If a member is in more than one team, which team does the member page follow? =
+
+The first team that uses the Single Page layout (lowest team ID). If none uses it, the lowest team ID. This team decides the circle image setting and the Previous / Next order.
+
 = Is it mobile responsive? =
 
 Yes, all layouts are fully mobile responsive.
@@ -144,6 +186,7 @@ Yes, all layouts are fully mobile responsive.
 2. Team member profile popup
 3. Team member edit screen in WordPress admin
 4. Team settings and shortcode configuration
+5. Single Page layout with circle profile image and Previous / Next navigation
 
 == Changelog ==
 
