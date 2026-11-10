@@ -3,7 +3,7 @@
  * Plugin Name: WPYog Team
  * Plugin URI:  https://popswidgets.com/
  * Description: A clean and modern WordPress plugin to showcase your team with a beautiful popup layout.
- * Version:     1.0.22
+ * Version:     1.0.27
  * Requires at least: 5.0
  * Requires PHP: 7.0
  * Author:      poppinsdigital.com
@@ -40,7 +40,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				'plugin_url'     => plugin_dir_url( __FILE__ ),
 				'plugin_base'    => dirname( plugin_basename( __FILE__ ) ),
 				'plugin_file'    => __FILE__,
-				'plugin_version' => '1.0.22',
+				'plugin_version' => '1.0.27',
 			);
 			$this->run_plugin();
 			$this->admin_functions();
@@ -56,6 +56,14 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 			add_action( 'init', array( $this, 'custom_image_size' ) );
 			add_shortcode( 'wpyogteam', array( $this, 'shortcode' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend' ) );
+
+			// Member details on their own page (used by the "Single Page" layout).
+			add_filter( 'the_content', array( $this, 'single_member_content' ), 20 );
+			// The member name is shown inside the details block, so hide the theme's duplicate page title.
+			add_filter( 'the_title', array( $this, 'hide_member_page_title' ), 10, 2 );
+
+			// Refresh permalinks once when the member URL slug changes.
+			add_action( 'init', array( $this, 'maybe_flush_rewrite' ), 99 );
 
 			// ---- SiteOrigin Page Builder compatibility ----
 			// SiteOrigin renders at the_content priority 16, AFTER do_shortcode (priority 11).
@@ -92,7 +100,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 
 
 			$layout   = sanitize_key( $options['layout'] );
-			$allowed  = array( 'popup' );
+			$allowed  = array_keys( $this->get_layouts() );
 			if ( ! in_array( $layout, $allowed, true ) ) {
 				$layout = 'popup';
 			}
@@ -129,6 +137,7 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 			add_action( 'save_post', array( $this, 'save_meta' ), 10, 2 );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin' ) );
 			add_action( 'admin_menu', array( $this, 'add_menu_items' ), 12 );
+			add_action( 'admin_init', array( $this, 'register_settings' ) );
 			add_action( 'edit_form_after_title', array( $this, 'shortcode_preview' ) );
 			add_filter( 'manage_wpyog_member_posts_columns', array( $this, 'member_columns' ) );
 			add_action( 'manage_wpyog_member_posts_custom_column', array( $this, 'member_column_data' ), 10, 2 );
@@ -173,6 +182,14 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 				'manage_options',
 				'wpyog-export-import',
 				array( $this->exporter, 'render_page' )
+			);
+			add_submenu_page(
+				'edit.php?post_type=wpyog_member',
+				__( 'Settings', 'wpyog-team' ),
+				__( 'Settings', 'wpyog-team' ),
+				'manage_options',
+				'wpyog-team-settings',
+				array( $this, 'render_settings_page' )
 			);
 		}
 
@@ -227,7 +244,8 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 					echo count( (array) $opts['memberlist'] );
 					break;
 				case 'layout':
-					echo esc_html( ucfirst( $opts['layout'] ) );
+					$layouts = $this->get_layouts();
+					echo esc_html( isset( $layouts[ $opts['layout'] ] ) ? $layouts[ $opts['layout'] ]['label'] : ucfirst( $opts['layout'] ) );
 					break;
 				case 'shortcode':
 					printf( '<code>[wpyogteam id="%s"]</code>', esc_attr( $post_id ) );
@@ -362,7 +380,16 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 
 			// Layout
 			$layout = isset( $_POST['layout'] ) ? sanitize_key( $_POST['layout'] ) : 'popup';
+			if ( ! array_key_exists( $layout, $this->get_layouts() ) ) {
+				$layout = 'popup';
+			}
 			update_post_meta( $post_id, 'layout', $layout );
+
+			// Circle profile image
+			update_post_meta( $post_id, 'circle_image', isset( $_POST['circle_image'] ) ? '1' : '0' );
+
+			// Previous / next navigation on member pages (Single Page layout)
+			update_post_meta( $post_id, 'single_pagination', isset( $_POST['single_pagination'] ) ? '1' : '0' );
 
 			// Columns
 			$columns = isset( $_POST['columns'] ) ? absint( $_POST['columns'] ) : 3;
@@ -400,6 +427,10 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 						'not_found_in_trash' => __( 'No members in trash.', 'wpyog-team' ),
 					),
 					'publicly_queryable' => true,
+					'rewrite'            => array(
+						'slug'       => $this->get_member_slug(),
+						'with_front' => false,
+					),
 					'show_ui'            => true,
 					'show_in_menu'       => true,
 					'capability_type'    => 'post',
@@ -452,11 +483,362 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 					'memberlist' => get_post_meta( $post_id, 'memberlist', true ) ?: array(),
 					'layout'     => get_post_meta( $post_id, 'layout', true ) ?: 'popup',
 					'columns'    => get_post_meta( $post_id, 'columns', true ) ?: '3',
+					'circle_image' => '1' === get_post_meta( $post_id, 'circle_image', true ),
+					'single_pagination' => '0' !== get_post_meta( $post_id, 'single_pagination', true ),
 					'margin'     => get_post_meta( $post_id, 'pt_margin', true ) ?: array( 'top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0 ),
 					'padding'    => get_post_meta( $post_id, 'pt_padding', true ) ?: array( 'top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0 ),
 				);
 			}
 			return false;
+		}
+
+		/**
+		 * Available layouts (key => label / admin icon).
+		 */
+		public function get_layouts() {
+			return array(
+				'popup'  => array( 'label' => __( 'Popup', 'wpyog-team' ), 'icon' => 'dashicons-external' ),
+				'single' => array( 'label' => __( 'Single Page', 'wpyog-team' ), 'icon' => 'dashicons-admin-page' ),
+			);
+		}
+
+		/**
+		 * Inline margin/padding style for the team wrapper.
+		 */
+		public function get_wrap_style( $options ) {
+			$margin  = isset( $options['margin'] ) ? (array) $options['margin'] : array();
+			$padding = isset( $options['padding'] ) ? (array) $options['padding'] : array();
+			$sides   = array( 'top', 'right', 'bottom', 'left' );
+			$m       = array();
+			$p       = array();
+			foreach ( $sides as $side ) {
+				$m[] = ( isset( $margin[ $side ] ) ? absint( $margin[ $side ] ) : 0 ) . 'px';
+				$p[] = ( isset( $padding[ $side ] ) ? absint( $padding[ $side ] ) : 0 ) . 'px';
+			}
+			return 'margin:' . implode( ' ', $m ) . '; padding:' . implode( ' ', $p ) . ';';
+		}
+
+		/**
+		 * Contact rows HTML for a member.
+		 */
+		public function build_contacts_html( $contacts ) {
+			$html = '';
+			if ( empty( $contacts ) ) {
+				return $html;
+			}
+			foreach ( $contacts as $c ) {
+				$label = esc_html( $c['label'] );
+				$value = esc_html( $c['value'] );
+				if ( filter_var( $c['value'], FILTER_VALIDATE_EMAIL ) ) {
+					$link = '<a href="mailto:' . esc_attr( $c['value'] ) . '">' . $value . '</a>';
+				} elseif ( $this->validate_phone( $c['value'] ) ) {
+					$link = '<a href="tel:' . esc_attr( $c['value'] ) . '">' . $value . '</a>';
+				} else {
+					$link = $value;
+				}
+				$html .= '<p class="pt-contact-item"><span class="pt-contact-label">' . $label . '</span>' . $link . '</p>';
+			}
+			return $html;
+		}
+
+		/**
+		 * Social icons HTML for a member.
+		 */
+		public function build_social_html( $socials ) {
+			if ( empty( $socials ) ) {
+				return '';
+			}
+			$html = '<div class="pt-social-icons">';
+			foreach ( $socials as $s ) {
+				$icon = esc_attr( $s['icon'] );
+				$link = $s['link'];
+				if ( filter_var( $link, FILTER_VALIDATE_EMAIL ) ) {
+					$href = 'mailto:' . esc_attr( $link );
+				} elseif ( $this->validate_phone( $link ) ) {
+					$href = 'tel:' . esc_attr( $link );
+				} else {
+					$href = esc_url( $link );
+				}
+				$html .= '<a href="' . $href . '" target="_blank" rel="noopener noreferrer"><i class="pt-icon-' . $icon . '" aria-hidden="true"></i></a>';
+			}
+			$html .= '</div>';
+			return $html;
+		}
+
+		/**
+		 * URL slug for member pages, e.g. /team/jane-doe/.
+		 * Set under Team > Settings, or override with the wpyog_team_member_slug filter.
+		 */
+		public function get_member_slug() {
+			$slug = sanitize_title( apply_filters( 'wpyog_team_member_slug', get_option( 'wpyog_team_member_slug', 'team' ) ) );
+			return $slug ? $slug : 'team';
+		}
+
+		/**
+		 * Slugs that must not be used for member pages.
+		 */
+		private function reserved_slugs() {
+			return array(
+				'wp-admin', 'wp-content', 'wp-includes', 'wp-json', 'feed', 'page', 'pages', 'category',
+				'tag', 'author', 'search', 'embed', 'comments', 'attachment', 'trackback', 'admin', 'login',
+			);
+		}
+
+		/**
+		 * Child pages of an existing page that uses the given slug (those URLs would clash).
+		 */
+		private function get_slug_conflicts( $slug ) {
+			$page = get_page_by_path( $slug );
+			if ( ! $page ) {
+				return array();
+			}
+			return get_pages( array(
+				'child_of'    => $page->ID,
+				'post_status' => 'publish',
+			) );
+		}
+
+		public function register_settings() {
+			register_setting( 'wpyog_team_settings', 'wpyog_team_member_slug', array(
+				'type'              => 'string',
+				'default'           => 'team',
+				'sanitize_callback' => array( $this, 'sanitize_member_slug' ),
+			) );
+		}
+
+		public function sanitize_member_slug( $value ) {
+			$old  = get_option( 'wpyog_team_member_slug', 'team' );
+			$slug = sanitize_title( $value );
+			if ( '' === $slug ) {
+				add_settings_error( 'wpyog_team_member_slug', 'empty', __( 'The URL slug cannot be empty.', 'wpyog-team' ), 'error' );
+				return $old;
+			}
+			if ( in_array( $slug, $this->reserved_slugs(), true ) ) {
+				add_settings_error( 'wpyog_team_member_slug', 'reserved', __( 'That slug is reserved by WordPress. Please choose another.', 'wpyog-team' ), 'error' );
+				return $old;
+			}
+			if ( $this->get_slug_conflicts( $slug ) ) {
+				add_settings_error( 'wpyog_team_member_slug', 'conflict', __( 'A page with this slug has child pages. Their URLs may stop working. Consider a different slug such as team-member.', 'wpyog-team' ), 'warning' );
+			}
+			return $slug;
+		}
+
+		public function render_settings_page() {
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+			$slug      = $this->get_member_slug();
+			$stored    = sanitize_title( get_option( 'wpyog_team_member_slug', 'team' ) );
+			$locked    = ( $slug !== $stored );
+			$conflicts = $this->get_slug_conflicts( $slug );
+			?>
+			<div class="wrap">
+				<h1><?php esc_html_e( 'Team Settings', 'wpyog-team' ); ?></h1>
+				<?php settings_errors(); ?>
+				<?php if ( $conflicts ) : ?>
+					<div class="notice notice-warning inline"><p>
+						<?php
+						printf(
+							/* translators: %s: URL slug */
+							esc_html__( 'A page at /%s/ has child pages. Those URLs may clash with member pages. Consider a different slug such as team-member.', 'wpyog-team' ),
+							esc_html( $slug )
+						);
+						?>
+					</p></div>
+				<?php endif; ?>
+				<form method="post" action="options.php">
+					<?php settings_fields( 'wpyog_team_settings' ); ?>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><label for="wpyog_team_member_slug"><?php esc_html_e( 'Member page URL slug', 'wpyog-team' ); ?></label></th>
+							<td>
+								<code><?php echo esc_html( trailingslashit( home_url() ) ); ?></code>
+								<input type="text" name="wpyog_team_member_slug" id="wpyog_team_member_slug"
+									value="<?php echo esc_attr( $locked ? $slug : $stored ); ?>" class="regular-text" <?php disabled( $locked ); ?> />
+								<code>/member-name/</code>
+								<p class="description">
+									<?php esc_html_e( 'Default: team. Used by the Single Page layout. Permalinks refresh automatically after saving.', 'wpyog-team' ); ?>
+									<?php if ( $locked ) : ?>
+										<br /><strong><?php esc_html_e( 'This slug is currently set by code (wpyog_team_member_slug filter).', 'wpyog-team' ); ?></strong>
+									<?php endif; ?>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php submit_button(); ?>
+				</form>
+			</div>
+			<?php
+		}
+
+		/**
+		 * Flush rewrite rules once whenever the member slug changes (or on first run).
+		 */
+		public function maybe_flush_rewrite() {
+			$slug = $this->get_member_slug();
+			if ( get_option( 'wpyog_team_rewrite_slug' ) !== $slug ) {
+				flush_rewrite_rules();
+				update_option( 'wpyog_team_rewrite_slug', $slug );
+			}
+		}
+
+		/**
+		 * Blank the theme's page title on a member page (the name is printed in the details block).
+		 */
+		public function hide_member_page_title( $title, $post_id = 0 ) {
+			if ( is_admin() || ! is_singular( 'wpyog_member' ) || ! in_the_loop() || ! is_main_query() ) {
+				return $title;
+			}
+			if ( (int) $post_id !== (int) get_queried_object_id() ) {
+				return $title;
+			}
+			return '';
+		}
+
+		/**
+		 * Find the team a member page belongs to (so it can follow that team's settings
+		 * and prev/next order). Prefers a team using the Single Page layout, then the
+		 * lowest team ID.
+		 */
+		public function get_member_team( $member_id ) {
+			static $cache = array();
+			$member_id = absint( $member_id );
+			if ( isset( $cache[ $member_id ] ) ) {
+				return $cache[ $member_id ];
+			}
+			$found    = 0;
+			$fallback = 0;
+			$teams    = get_posts( array(
+				'post_type'      => 'wpyog_team',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1,
+				'orderby'        => 'ID',
+				'order'          => 'ASC',
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- narrow lookup on a single meta key.
+					'relation' => 'OR',
+					array(
+						'key'     => 'memberlist',
+						'value'   => 'i:' . $member_id . ';',
+						'compare' => 'LIKE',
+					),
+					array(
+						'key'     => 'memberlist',
+						'value'   => '"' . $member_id . '";',
+						'compare' => 'LIKE',
+					),
+				),
+			) );
+			foreach ( $teams as $tid ) {
+				$list = array_map( 'absint', (array) get_post_meta( $tid, 'memberlist', true ) );
+				if ( ! in_array( $member_id, $list, true ) ) {
+					continue;
+				}
+				if ( ! $fallback ) {
+					$fallback = $tid;
+				}
+				if ( 'single' === get_post_meta( $tid, 'layout', true ) ) {
+					$found = $tid;
+					break;
+				}
+			}
+			$cache[ $member_id ] = $found ? $found : $fallback;
+			return $cache[ $member_id ];
+		}
+
+		/**
+		 * Member details on the member's own page (the "Single Page" layout target).
+		 * Wraps the post content with photo, designation, name, contacts, social links
+		 * and previous / next navigation.
+		 */
+		public function single_member_content( $content ) {
+			if ( ! is_singular( 'wpyog_member' ) || ! in_the_loop() || ! is_main_query() ) {
+				return $content;
+			}
+
+			$member_id = get_the_ID();
+			$data      = $this->get_options( 'wpyog_member', $member_id );
+			if ( ! $data ) {
+				return $content;
+			}
+
+			$name   = get_post_field( 'post_title', $member_id );
+			$circle = false;
+			$prev   = 0;
+			$next   = 0;
+
+			$team_id   = $this->get_member_team( $member_id );
+			$team_opts = $team_id ? $this->get_options( 'wpyog_team', $team_id ) : false;
+			if ( $team_opts ) {
+				$circle = ! empty( $team_opts['circle_image'] );
+				if ( ! empty( $team_opts['single_pagination'] ) ) {
+					$ids = array();
+					foreach ( (array) $team_opts['memberlist'] as $mid ) {
+						$mid = absint( $mid );
+						if ( 'wpyog_member' === get_post_type( $mid ) && 'publish' === get_post_status( $mid ) ) {
+							$ids[] = $mid;
+						}
+					}
+					$pos = array_search( $member_id, $ids, true );
+					if ( false !== $pos ) {
+						$prev = isset( $ids[ $pos - 1 ] ) ? $ids[ $pos - 1 ] : 0;
+						$next = isset( $ids[ $pos + 1 ] ) ? $ids[ $pos + 1 ] : 0;
+					}
+				}
+			}
+
+			$contacts = $this->build_contacts_html( $data['contact'] );
+			$social   = $this->build_social_html( $data['social'] );
+			$photo    = $this->get_member_thumbnail_url( $member_id, 'wpyog_team' );
+
+			ob_start();
+			?>
+			<div class="pt-member-single<?php echo $circle ? ' pt-circle-img' : ''; ?>">
+				<div class="pt-single-photo">
+					<img src="<?php echo esc_url( $photo ); ?>" alt="<?php echo esc_attr( $name ); ?>" />
+				</div>
+				<div class="pt-single-content">
+					<?php if ( $data['designation'] ) : ?>
+						<p class="pt-single-designation"><?php echo esc_html( $data['designation'] ); ?></p>
+					<?php endif; ?>
+					<h1 class="pt-single-name"><?php echo esc_html( $name ); ?></h1>
+					<?php if ( $data['subtitle'] ) : ?>
+						<p class="pt-single-subtitle"><?php echo esc_html( $data['subtitle'] ); ?></p>
+					<?php endif; ?>
+					<div class="pt-single-bio"><?php echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already-filtered post content. ?></div>
+					<?php if ( $contacts ) : ?>
+						<div class="pt-single-contacts"><?php echo wp_kses_post( $contacts ); ?></div>
+					<?php endif; ?>
+					<?php if ( $social ) : ?>
+						<div class="pt-single-social"><?php echo wp_kses_post( $social ); ?></div>
+					<?php endif; ?>
+				</div>
+			</div>
+			<?php if ( $prev || $next ) : ?>
+				<nav class="pt-single-nav" aria-label="<?php esc_attr_e( 'Team member navigation', 'wpyog-team' ); ?>">
+					<?php if ( $prev ) : ?>
+						<a class="pt-nav-prev" rel="prev" href="<?php echo esc_url( get_permalink( $prev ) ); ?>">
+							<span class="pt-nav-arrow" aria-hidden="true">&larr;</span>
+							<span class="pt-nav-text">
+								<span class="pt-nav-label"><?php esc_html_e( 'Previous', 'wpyog-team' ); ?></span>
+								<span class="pt-nav-name"><?php echo esc_html( get_post_field( 'post_title', $prev ) ); ?></span>
+							</span>
+						</a>
+					<?php endif; ?>
+					<?php if ( $next ) : ?>
+						<a class="pt-nav-next" rel="next" href="<?php echo esc_url( get_permalink( $next ) ); ?>">
+							<span class="pt-nav-text">
+								<span class="pt-nav-label"><?php esc_html_e( 'Next', 'wpyog-team' ); ?></span>
+								<span class="pt-nav-name"><?php echo esc_html( get_post_field( 'post_title', $next ) ); ?></span>
+							</span>
+							<span class="pt-nav-arrow" aria-hidden="true">&rarr;</span>
+						</a>
+					<?php endif; ?>
+				</nav>
+			<?php endif; ?>
+			<?php
+			return ob_get_clean();
 		}
 
 		public function get_member_thumbnail( $member_id, $size = 'wpyog_team' ) {
@@ -518,5 +900,12 @@ if ( ! class_exists( 'WPYog_Team' ) ) :
 		WPYog_Team::get_instance();
 	}
 	add_action( 'plugins_loaded', 'wpyog_team_init' );
+
+	function wpyog_team_activate() {
+		WPYog_Team::get_instance()->register_post_types();
+		flush_rewrite_rules();
+		update_option( 'wpyog_team_rewrite_slug', WPYog_Team::get_instance()->get_member_slug() );
+	}
+	register_activation_hook( __FILE__, 'wpyog_team_activate' );
 
 endif;

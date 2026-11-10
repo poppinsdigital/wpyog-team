@@ -304,3 +304,12 @@
 .pt-select {
   min-width: 160px;
 }
+
+/* ---- Checkbox field ---- */
+.pt-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}

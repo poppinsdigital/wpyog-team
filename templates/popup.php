@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- this file is only ever reached via include()/require() from inside a class method; its top-level variables and hook usage are function-local, not real WordPress globals.
 
 $cols    = isset( $options['columns'] ) ? absint( $options['columns'] ) : 3;
+$circle  = ! empty( $options['circle_image'] );
 $margin  = isset( $options['margin'] )  ? $options['margin']  : array();
 $padding = isset( $options['padding'] ) ? $options['padding'] : array();
 
@@ -58,7 +59,7 @@ if ( $team_query->have_posts() ) {
 }
 ?>
 
-<div class="pt-team-wrap pt-popup-layout pt-cols-<?php echo esc_attr( $cols ); ?>"
+<div class="pt-team-wrap pt-popup-layout pt-cols-<?php echo esc_attr( $cols ); ?><?php echo $circle ? ' pt-circle-img' : ''; ?>"
 	id="pt-team-<?php echo esc_attr( $id ); ?>"
 	style="<?php echo esc_attr( $inline_style ); ?>"
 	data-team="<?php echo esc_attr( $id ); ?>">
@@ -147,41 +148,8 @@ if ( $team_query->have_posts() ) {
 // Pass all member data to JS
 $members_json = array();
 foreach ( $all_members as $m ) {
-	// Build contacts HTML
-	$contacts_html = '';
-	if ( ! empty( $m['contact'] ) ) {
-		foreach ( $m['contact'] as $c ) {
-			$label = esc_html( $c['label'] );
-			$value = esc_html( $c['value'] );
-			if ( filter_var( $c['value'], FILTER_VALIDATE_EMAIL ) ) {
-				$link = '<a href="mailto:' . esc_attr( $c['value'] ) . '">' . $value . '</a>';
-			} elseif ( $this->validate_phone( $c['value'] ) ) {
-				$link = '<a href="tel:' . esc_attr( $c['value'] ) . '">' . $value . '</a>';
-			} else {
-				$link = $value;
-			}
-			$contacts_html .= '<p class="pt-contact-item"><span class="pt-contact-label">' . $label . '</span>' . $link . '</p>';
-		}
-	}
-
-	// Build social icons HTML
-	$social_html = '';
-	if ( ! empty( $m['social'] ) ) {
-		$social_html .= '<div class="pt-social-icons">';
-		foreach ( $m['social'] as $s ) {
-			$icon = esc_attr( $s['icon'] );
-			$link = $s['link'];
-			if ( filter_var( $link, FILTER_VALIDATE_EMAIL ) ) {
-				$href = 'mailto:' . esc_attr( $link );
-			} elseif ( $this->validate_phone( $link ) ) {
-				$href = 'tel:' . esc_attr( $link );
-			} else {
-				$href = esc_url( $link );
-			}
-			$social_html .= '<a href="' . $href . '" target="_blank" rel="noopener noreferrer"><i class="pt-icon-' . $icon . '" aria-hidden="true"></i></a>';
-		}
-		$social_html .= '</div>';
-	}
+	$contacts_html = $this->build_contacts_html( $m['contact'] );
+	$social_html   = $this->build_social_html( $m['social'] );
 
 	$members_json[] = array(
 		'id'          => $m['id'],

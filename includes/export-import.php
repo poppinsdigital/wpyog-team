@@ -161,6 +161,8 @@ class WPYog_Export_Import {
 					'memberlist' => get_post_meta( $id, 'memberlist',  true ) ?: array(),
 					'layout'     => get_post_meta( $id, 'layout',      true ) ?: 'popup',
 					'columns'    => get_post_meta( $id, 'columns',     true ) ?: 3,
+					'circle_image' => get_post_meta( $id, 'circle_image', true ) === '1' ? 1 : 0,
+					'single_pagination' => get_post_meta( $id, 'single_pagination', true ) === '0' ? 0 : 1,
 					'margin'     => get_post_meta( $id, 'pt_margin',   true ) ?: array( 'top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0 ),
 					'padding'    => get_post_meta( $id, 'pt_padding',  true ) ?: array( 'top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0 ),
 				);
@@ -329,6 +331,8 @@ class WPYog_Export_Import {
 		update_post_meta( $new_id, 'memberlist', $new_memberlist );
 		update_post_meta( $new_id, 'layout',     sanitize_key( $team['layout']  ?? 'popup' ) );
 		update_post_meta( $new_id, 'columns',    absint( $team['columns']        ?? 3 ) );
+		update_post_meta( $new_id, 'circle_image', ! empty( $team['circle_image'] ) ? '1' : '0' );
+		update_post_meta( $new_id, 'single_pagination', isset( $team['single_pagination'] ) && empty( $team['single_pagination'] ) ? '0' : '1' );
 
 		$sides_default = array( 'top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0 );
 

@@ -247,6 +247,7 @@
   $(document).on('change', 'input[name="layout"]', function () {
     $('.pt-layout-option').removeClass('is-selected');
     $(this).closest('.pt-layout-option').addClass('is-selected');
+    $('.pt-single-only').toggle($(this).val() === 'single');
   });
 
   /* =========================================================

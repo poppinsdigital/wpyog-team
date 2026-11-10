@@ -14,9 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $margin  = isset( $options['margin'] )  ? $options['margin']  : array( 'top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0 );
 $padding = isset( $options['padding'] ) ? $options['padding'] : array( 'top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0 );
 
-$layouts = array(
-	'popup' => array( 'label' => 'Popup', 'icon' => 'dashicons-external' ),
-);
+$layouts = $this->get_layouts();
 
 // Build a lookup of all published members (id => title)
 $all_members_map = array();
@@ -143,6 +141,28 @@ if ( $members_query->have_posts() ) {
 					</option>
 				<?php endforeach; ?>
 			</select>
+		</div>
+	</div>
+
+	<!-- Circle profile image -->
+	<div class="pt-section pt-section-row">
+		<div class="pt-field">
+			<label class="pt-checkbox-label" for="circle_image">
+				<input type="checkbox" name="circle_image" id="circle_image" value="1" <?php checked( ! empty( $options['circle_image'] ) ); ?> />
+				<?php esc_html_e( 'Show profile image in circle', 'wpyog-team' ); ?>
+			</label>
+			<p class="description"><?php esc_html_e( 'Crops member photos to a circle in the grid, popup and single page.', 'wpyog-team' ); ?></p>
+		</div>
+	</div>
+
+	<!-- Previous / next navigation (Single Page layout only) -->
+	<div class="pt-section pt-section-row pt-single-only" <?php echo 'single' === $options['layout'] ? '' : 'style="display:none;"'; ?>>
+		<div class="pt-field">
+			<label class="pt-checkbox-label" for="single_pagination">
+				<input type="checkbox" name="single_pagination" id="single_pagination" value="1" <?php checked( ! empty( $options['single_pagination'] ) ); ?> />
+				<?php esc_html_e( 'Show previous / next navigation', 'wpyog-team' ); ?>
+			</label>
+			<p class="description"><?php esc_html_e( 'Adds Previous and Next links at the bottom of each member page, following the order of members in this team.', 'wpyog-team' ); ?></p>
 		</div>
 	</div>
 

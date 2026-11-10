@@ -4,7 +4,7 @@ Tags: team, staff, members, directory, shortcode
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 1.0.22
+Stable tag: 1.0.27
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,29 @@ Yes, all layouts are fully mobile responsive.
 
 == Changelog ==
 
+= 1.0.27 =
+* Change: Member pages now use `/team/member-name/` by default (was `/wpy_member/`).
+* New: Team > Settings page with a "Member page URL slug" field. Permalinks refresh automatically on save. Warns if the slug clashes with an existing page that has child pages, and blocks reserved WordPress slugs.
+
+= 1.0.26 =
+* Improvement: Default styling for the Previous / Next navigation. Bordered buttons with hover state, theme link underlines removed, stacked on mobile.
+
+= 1.0.25 =
+* New: "Show previous / next navigation" option in team settings (Single Page layout). On by default; untick it to hide the Previous / Next links on member pages.
+* Fix: Member pages now find their team even when the member list was stored with string IDs (e.g. after some imports), so navigation and circle images apply reliably.
+* Improvement: Export / Import includes the navigation setting.
+
+= 1.0.24 =
+* Improvement: Single Page layout now matches the popup. Designation, name and subtitle sit left-aligned in the right column next to the photo.
+* New: Previous / Next navigation between team members on member pages (follows the team's member order). Replaces the Back link.
+* Improvement: Clean member URLs. The `?pt_team=` parameter is gone; the member page works out its team automatically.
+* Change: Member page URLs now use `/wpy_member/member-name/` instead of `/wpyog_member/member-name/`. Permalinks are refreshed automatically on update. Use the `wpyog_team_member_slug` filter to change the slug.
+
+= 1.0.23 =
+* New: "Single Page" layout. Clicking a member opens their own page with photo, designation, bio, contact details and social links, instead of a popup.
+* New: "Show profile image in circle" option in team settings. Applies to the grid, popup and single page layouts.
+* Improvement: Export / Import now includes the circle image setting.
+
 = 1.0.22 =
 * Fix: Removed explicit `suppress_filters => true` from internal queries (was bypassing other plugins' query filters).
 * Fix: Import file path now sanitized before use.
@@ -177,6 +200,21 @@ Yes, all layouts are fully mobile responsive.
 * Initial release with popup layout, team grid, social media links, and shortcode support.
 
 == Upgrade Notice ==
+
+= 1.0.27 =
+Member page URLs change to /team/member-name/ by default. You can change the slug under Team > Settings.
+
+= 1.0.26 =
+Styles the Previous / Next navigation on member pages.
+
+= 1.0.25 =
+Adds an option to turn off previous / next navigation on Single Page member pages.
+
+= 1.0.24 =
+Member page URLs change from /wpyog_member/ to /wpy_member/. Single Page layout now matches the popup and has previous / next navigation.
+
+= 1.0.23 =
+Adds the Single Page layout and a circle profile image option. Existing teams are unchanged.
 
 = 1.0.22 =
 Internal code quality fixes ahead of WordPress.org review. No visible changes for existing users.
